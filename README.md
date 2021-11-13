@@ -1,5 +1,5 @@
 # TVD-MHD-by-Pen-et-al
- Exploring with the pulic TVD MHD code provided by Pen, Arrass, and Wong.
+ Exploring with the public TVD MHD code provided by Pen, Arrass, and Wong.
 
 I have downloaded and modified the magentohydrodynamic Fortran code from https://www.cita.utoronto.ca/~pen/MHD/ and performed a few tests.  In this repository, the modified code is called mhd.f90 while the original code is mhd_orig.f90.  The modifications were limited to setting initial conditions and controlling the output data files and structure.  The core MHD solver and method were untouched.
 
