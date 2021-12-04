@@ -4,7 +4,7 @@ Exploring with the public TVD MHD code provided by [Pen, Arrass, and Wong](https
 
 I have downloaded and modified the magentohydrodynamic Fortran code from https://www.cita.utoronto.ca/~pen/MHD/ and performed a few tests.  In this repository, the modified code is called `mhd_mod.f90` while the original code name is unchanged (`mhd.f90`).  The [modifications](https://github.com/Ashton-Brown/TVD-MHD-by-Pen-et-al/blob/main/mhd.f90.diff) were limited to setting initial conditions and controlling the output data files and structure.  The core MHD solver and method were untouched.
 
-I used a Windows 10 machine, comiling and runnning Fortran 90 with MSYS2 MinGW.
+I used a Windows 10 machine, compiling and runnning Fortran 90 with MSYS2 MinGW.
 
 # Alven test
 
@@ -16,6 +16,6 @@ I used the Alven wave initial conditions (starts at [line 163 in original code](
 
 # Shock test
 
-I added initial conditions matching the first shock wave presented in the [published paper](https://www.cita.utoronto.ca/~pen/MHD/mhdpaper.pdf), in an attempt to repoduce figure 6 from the paper.  However, my results are inconsistent and seem unrealistic.  After a short time, the time step size significantly decreases.  Eventually, the computation goes unstable, resulting in NaNs in the solution.  This MHD solver either does not handle shock waves well or there is an issue with the solver itself.  This inconsistency with the published paper may be due to the publicly available code being a different solver than that of the paper.  This is mnetioned in the first paragraph of section 3.3 of the paper.
+I added a set of initial conditions matching the first shock wave presented in the [published paper](https://www.cita.utoronto.ca/~pen/MHD/mhdpaper.pdf), in an attempt to repoduce figure 6 from the paper.  However, my results are inconsistent and seem unrealistic.  After a short time, the time step size significantly decreases.  Eventually, the computation goes unstable, resulting in NaNs in the solution.  This MHD solver either does not handle shock waves well or there is an issue with the solver itself.  The paper mentions in the first paragraph of section 3.3 that the publicly available code is based on a different method.  This may explain the inconsistency.
 
 ![PhaseSpace](https://github.com/Ashton-Brown/TVD-MHD-by-Pen-et-al/raw/main/ShockTests/ShockFig6Issue.svg)
