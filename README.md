@@ -1,10 +1,10 @@
 # Overview
 
-Exploring with the public TVD MHD code provided by [Pen, Arrass, and Wong](https://www.cita.utoronto.ca/~pen/MHD/).
+Experiments with the public TVD MHD code provided by [Pen, Arrass, and Wong](https://www.cita.utoronto.ca/~pen/MHD/).
 
 I have downloaded and modified the magentohydrodynamic Fortran code from https://www.cita.utoronto.ca/~pen/MHD/ and performed a few tests.  In this repository, the modified code is called `mhd_mod.f90` while the original code name is unchanged (`mhd.f90`).  The [modifications](https://github.com/Ashton-Brown/TVD-MHD-by-Pen-et-al/blob/main/mhd.f90.diff) were limited to setting initial conditions and controlling the output data files and structure.  The core MHD solver and method were untouched.
 
-I used a Windows 10 machine, compiling and runnning Fortran 90 with MSYS2 MinGW.
+I used a Windows 10 machine, compiling with gfortran from MSYS2 MinGW 64-bit (`gfortran mhd.f90 -o mhd.exe`).
 
 # Alven test
 
