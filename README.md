@@ -8,7 +8,9 @@ I used a Windows 10 machine, compiling with gfortran from MSYS2 MinGW 64-bit (`g
 
 # Alfvén test
 
-I used the Alfvén wave initial conditions (starts at [line 163 in original code](https://github.com/Ashton-Brown/TVD-MHD-by-Pen-et-al/blob/main/mhd.f90#L163)) to visualize solution in time, as well as test stability against inital gas pressure.  The Matlab script [visualize](https://github.com/Ashton-Brown/TVD-MHD-by-Pen-et-al/blob/main/visualize.m) reads in the data output from the `mhd_mod.f90` code and animates `v_{x,y,z}` and `b_{x,y,z}` in time.  The Alfvén waves indeed translate as expected.  Results from the stability test, from varying gas pressure ([line 190 in my modified code](https://github.com/Ashton-Brown/TVD-MHD-by-Pen-et-al/blob/main/mhd_mod.f90#L190)) are shown below.  They show that with increasing gas pressure there is increasing error.
+I used the Alfvén wave initial conditions (starts at [line 163 in original code](https://github.com/Ashton-Brown/TVD-MHD-by-Pen-et-al/blob/main/mhd.f90#L163)) to visualize solution in time, as well as test stability against inital gas pressure.  The Matlab script [visualize](https://github.com/Ashton-Brown/TVD-MHD-by-Pen-et-al/blob/main/visualize.m) reads in the data output from the `mhd_mod.f90` code and animates `v_{x,y,z}` and `b_{x,y,z}` in time.  The Alfvén waves indeed translate as expected.
+
+In the oroginal code, the comment on line _ Results from the stability test, from varying gas pressure ([line 190 in my modified code](https://github.com/Ashton-Brown/TVD-MHD-by-Pen-et-al/blob/main/mhd_mod.f90#L190)) are shown below.  They show that with increasing gas pressure over x there is increasing error.
 
 ![Error](https://github.com/Ashton-Brown/TVD-MHD-by-Pen-et-al/raw/main/AlvenTests/Error.svg)
 
