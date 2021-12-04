@@ -26,33 +26,24 @@
 ! or http://www.cita.utoronto.ca/~pen/MHD
 ! for questions contact pen@cita.utoronto.ca
 !
-program mhd
 implicit none
 integer, parameter :: n=100,nx=n,ny=1,nz=1
 real, dimension(5,nx,ny,nz) :: u
 real, dimension(3,nx,ny,nz) :: b
-real dt,tf,t
-real :: L=2.
-integer iter,i,skip
+real t,dt,tf
+integer iter,i
 ! B field is stored on the left side of each cell
+
+
 call init(u,b,nx,ny,nz)
-tf=0.8 !nx
+tf=nx*4
 t=0
 iter=0
-open(1,file='u.dat',action='write',status='replace')
-open(2,file='e.dat',action='write',status='replace')
-open(3,file='b.dat',action='write',status='replace')
-open(4,file='t.dat',action='write',status='replace')
-call output
-skip=10
 do
    iter=iter+1
-   if (t>=tf) then
-      call output 
-      exit
-   end if
-   dt=0.5*cfl(u,b)
-   dt=min(dt,(tf-t/2))
+   if (t>=tf) exit
+   dt=0.9*cfl(u,b)
+   dt=min(dt,(tf-t)/2)
    t=t+2*dt
    call fluidx(u,b,nx,ny,nz,dt)
    call advectbyzx(u,b,nx,ny,nz,dt)
@@ -66,6 +57,7 @@ do
    call advectbyzx(u,b,nz,nx,ny,dt)
    call advectbyzx(u,b,nz,nx,ny,dt)
    call fluidx(u,b,nz,nx,ny,dt)
+   
 ! back
    call transpose13(u,b,u,b,nz,nx,ny)
    call advectbyzx(u,b,ny,nx,nz,dt)
@@ -74,33 +66,27 @@ do
    call transpose12(u,b,u,b,ny,nx,nz)
    call advectbyzx(u,b,nx,ny,nz,dt)
    call fluidx(u,b,nx,ny,nz,dt)
-   if (skip>0) then
-      if (mod(iter,skip)==0) then
-         call output
-      end if
-   end if
+   if (mod(iter,10) .eq. 1) write(*,*) 't=',t,iter,u(2,nx/4,1,1)
 end do
-close(4)
-close(3)
-close(2)
-close(1)
+call output
 
 contains
   subroutine output
     integer i,j
+    open(10,file='u.dat')
+    open(20,file='e.dat')
     do j=1,1
     do i=1,nx
-       write(1,'(7(1x,e15.5))') u(1,i,j,1),u(2:4,i,j,1)/u(1,i,j,1),u(5,i,j,1)
+       write(10,'(i5,7(1x,e9.3))') i,u(1,i,j,1)-1,u(2:4,i,j,1)/u(1,i,j,1),b(:,i,j,1)-(/1,0,0/)
     end do
     do i=1,nx
-       !write(2,'(7(1x,e30.20))') u(5,i,j,1)-sum(u(2:4,i,j,1)**2)/u(1,i,j,1)/2-sum(b(:,i,j,1)**2)/2
-    end do
-    do i=1,nx
-       write(3,'(3(1x,e15.5))') b(1,i,j,1),b(2,i,j,1),b(3,i,j,1)
+       write(20,'(i5,7(1x,e30.20))') i,u(5,i,j,1)-sum(u(2:4,i,j,1)**2)/u(1,i,j,1)/2-sum(b(:,i,j,1)**2)/2
     end do
     end do
-    write(4,*) t
+    close(20)
+    close(10)
   end subroutine output
+
 
   function cfl(u,b)
     real, dimension(:,:,:,:)::u,b
@@ -132,32 +118,19 @@ contains
     end do
     cfl=1/c
   end function cfl
-end program mhd
+
+
+end
 
 subroutine init(u,b,nx,ny,nz)
   implicit none
   integer nx,ny,nz
-  real u(5,nx,ny,nz),b(3,nx,ny,nz),beta,k,p,cs
-  real :: p0=3./5.,gamma=3./5.
+  real u(5,nx,ny,nz),b(3,nx,ny,nz)
+  real p0
   integer i
-  real, parameter :: epsilon=.1, A=0.001, pi=3.14159,L=2*pi
-
-! fast wave
-  beta=0.1
-  k=2*pi/L
-  p=beta/gamma
-  cs=gamma*p/1
-  u=0
-  b=0
-  b(3,:,:,:)=1
-  u(5,:,:,:)=p
-  do i=1,nx
-     u(1,i,:,:)=1+p*A*cos( k*i/nx )/cs
-  enddo
+  real, parameter :: epsilon=.1
   
-  ! return
-
-
+  p0=3./5.
   u=0
   b=0
   b(1,:,:,:)=1
@@ -167,8 +140,7 @@ subroutine init(u,b,nx,ny,nz)
   u(1,:,1,1)=u(1,:,1,1)+u(2,:,1,1)
   u(5,:,:,:)=u(5,:,:,:)+sum(b**2,1)/2+u(2,:,:,:)**2/u(1,:,:,:)/2
   u(5,:,1,1)=u(5,:,1,1)+p0*u(2,:,1,1)*5./3./(2./3.)
- !   return
-
+!    return
 ! circularly polarized alven wave:
 ! background : rho=B_x=1 all others zero
   u=0
@@ -177,8 +149,8 @@ subroutine init(u,b,nx,ny,nz)
   u(1,:,:,:)=1
   u(5,:,:,:)=0.1  ! to keep things stable
   do i=1,nx
-     u(3,i,:,:)=epsilon*sin( 2*pi*i/nx )
-     u(4,i,:,:)=epsilon*cos( 2*pi*i/nx )
+     u(3,i,:,:)=epsilon*sin( 2*3.14159*i/nx )
+     u(4,i,:,:)=epsilon*cos( 2*3.14159*i/nx )
   enddo
   b(2,:,:,:)=-u(3,:,:,:)
   b(3,:,:,:)=-u(4,:,:,:)
@@ -198,15 +170,14 @@ subroutine init(u,b,nx,ny,nz)
   b=0
   b(1,:,:,:)=1
   u(1,:,:,:)=1
-  u(5,:,:,:)=100000  ! to keep things stable (originally 0.001)
+  u(5,:,:,:)=.001  ! to keep things stable
   do i=1,nx
      u(3,i,:,:)=0.1*sin( 2*3.14159*i/nx )
   enddo
   b(2,:,:,:)=-u(3,:,:,:)
   b(2,:,:,:)=(b(2,:,:,:)+cshift(b(2,:,:,:),-1,1))/2
   u(5,:,:,:)=u(5,:,:,:)+sum(b**2,1)/2+u(3,:,:,:)**2/u(1,:,:,:)/2
-  ! return
-
+ ! return
   ! magnetic
   u=0
   b=0
@@ -221,7 +192,6 @@ subroutine init(u,b,nx,ny,nz)
   u(5,:,:,:)=u(5,:,:,:)+sum(b**2,1)/2+sum(u(2:4,:,:,:)**2,1)/u(1,:,:,:)/2
   write(*,*) 'magnetic'
 !  return
-
   ! magnetosonic
   p0=3./5./2.
   u=0
@@ -230,25 +200,13 @@ subroutine init(u,b,nx,ny,nz)
   u(1,:,:,:)=1
   u(5,:,:,:)=p0*1.5
   do i=1,nx
-     u(2,i,:,:)=0.01*cos( 2*pi*i/nx )
+     u(2,i,:,:)=0.0001*sin( 2*3.14159*i/nx )
   enddo
   b(2,:,:,:)=b(2,:,:,:)+u(2,:,:,:)/sqrt(2.)
   u(1,:,:,:)=u(1,:,:,:)+u(2,:,:,:)
   u(5,:,:,:)=u(5,:,:,:)+sum(b**2,1)/2+sum(u(2:4,:,:,:)**2,1)/u(1,:,:,:)/2
   u(5,:,:,:)=u(5,:,:,:)+p0*u(2,:,:,:)*5./3./(2./3.)
   write(*,*) 'magnetosonic'
-  ! return
-
-  ! shock
-  u=0
-  b=0
-  u(1,:,:,:)=1
-  u(2,1:50,:,:)=10
-  u(2,51:100,:,:)=-10
-  u(5,1:50,:,:)=20
-  u(5,51:100,:,:)=1
-  b(1:2,:,:,:)=5./sqrt(4.*pi)
-  write(*,*) 'shock'
 end subroutine init
 
 subroutine fluidx(u,b,nx,ny,nz,dt)

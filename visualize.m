@@ -7,6 +7,8 @@ b=load('b.dat');
 % Unpack data
 nt=length(t);
 nx=length(u)/nt;
+L=1;
+x=(1:nx)*L/nx;x=x';
 rho=zeros(nx,nt);
 vx=rho;
 vy=rho;
@@ -34,34 +36,40 @@ for i=1:skip:nt
 
     % vx
     subplot(2,3,1)
-    plot(vx(:,i))
+    plot(x,vx(:,i))
     ylabel('vx')
     ylim([-11 11])
+    xlim([0 L])
     % vy
     subplot(2,3,2)
-    plot(vy(:,i))
+    plot(x,vy(:,i))
     ylabel('vy')
     ylim([-0.5 0.5])
+    xlim([0 L])
     % vz
     subplot(2,3,3)
-    plot(vz(:,i))
+    plot(x,vz(:,i))
     ylabel('vz')
     ylim([-1 1])
+    xlim([0 L])
     % bx
     subplot(2,3,4)
     plot(bx(:,i))
     ylabel('bx')
     ylim([1.3 1.5])
+    xlim([0 L])
     % by
     subplot(2,3,5)
-    plot(by(:,i))
+    plot(x,by(:,i))
     ylabel('by')
     ylim([1 6])
+    xlim([0 L])
     % bz
     subplot(2,3,6)
-    plot(bz(:,i))
+    plot(x,bz(:,i))
     ylabel('bz')
     ylim([-1 1])
+    xlim([0 L])
 
     pause(0.1)
 end

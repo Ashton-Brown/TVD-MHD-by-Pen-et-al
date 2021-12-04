@@ -2,7 +2,7 @@
 
 clear;close all;
 % Load data
-p=[1e-4 3e-4 1e-3 3e-3 1e-2 3e-2 1e-1 3e-1 1e0 3e0 1e1 3e1 1e2 1e3 1e4 1e5];
+p=[1e-8 1e-7 1e-6 1e-5 1e-4 3e-4 1e-3 3e-3 1e-2 3e-2 1e-1 3e-1 1e0 3e0 1e1 3e1 1e2 1e3 1e4 1e5];
 nx=length(get_vy('_1e-03'));
 vy=zeros(nx,length(p));
 for i=1:length(p)
@@ -14,14 +14,15 @@ end
 vy_exact=0.1*sin(2*pi*(1:nx)/nx)';
 
 % Plot for sanity check
+pplot=[1e-8 1e-5 1e-3 1e-1 1e1 1e3 1e4 1e5];
 figure
 plot(vy_exact,'o')
-leg=cell(size(p));
+leg=cell(size(pplot));
 leg{1}='exact';
 hold on
-for i=1:length(p)
-    plot(vy(:,i))
-    leg{i+1}=sprintf('p=%1.0e',p(i));
+for i=1:length(pplot)
+    plot(vy(:,p==pplot(i)))
+    leg{i+1}=sprintf('p=%1.0e',pplot(i));
 end
 hold off
 xlabel('x')
@@ -42,3 +43,4 @@ loglog(p,err,'.-')
 ylabel('Error')
 xlabel('p, Gas pressure')
 title('Error versus initial gas pressure after one period')
+xlim([1e-8 1e5])

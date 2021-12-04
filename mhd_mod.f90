@@ -31,18 +31,27 @@ integer, parameter :: n=100,nx=n,ny=1,nz=1
 real, dimension(5,nx,ny,nz) :: u
 real, dimension(3,nx,ny,nz) :: b
 real t,dt,tf
-integer iter,i
+integer iter,i,skip
 ! B field is stored on the left side of each cell
 
 
 call init(u,b,nx,ny,nz)
-tf=nx*4
+tf=nx
 t=0
 iter=0
+open(1,file='u_mod.dat',action='write',status='replace')
+open(2,file='e_mod.dat',action='write',status='replace')
+open(3,file='b_mod.dat',action='write',status='replace')
+open(4,file='t_mod.dat',action='write',status='replace')
+call output
+skip=0
 do
    iter=iter+1
-   if (t>=tf) exit
-   dt=0.9*cfl(u,b)
+   if (t>=tf) then
+      call output 
+      exit
+   end if
+   dt=0.5*cfl(u,b)
    dt=min(dt,(tf-t)/2)
    t=t+2*dt
    call fluidx(u,b,nx,ny,nz,dt)
@@ -67,24 +76,32 @@ do
    call advectbyzx(u,b,nx,ny,nz,dt)
    call fluidx(u,b,nx,ny,nz,dt)
    if (mod(iter,10) .eq. 1) write(*,*) 't=',t,iter,u(2,nx/4,1,1)
+   if (skip>0) then
+      if (mod(iter,skip)==0) then
+         call output
+      end if
+   end if
 end do
-call output
+close(4)
+close(3)
+close(2)
+close(1)
 
 contains
   subroutine output
     integer i,j
-    open(10,file='u.dat')
-    open(20,file='e.dat')
     do j=1,1
     do i=1,nx
-       write(10,'(i5,7(1x,e9.3))') i,u(1,i,j,1)-1,u(2:4,i,j,1)/u(1,i,j,1),b(:,i,j,1)-(/1,0,0/)
+       write(1,'(7(1x,e15.5))') u(1,i,j,1),u(2:4,i,j,1)/u(1,i,j,1),u(5,i,j,1)
     end do
     do i=1,nx
-       write(20,'(i5,7(1x,e30.20))') i,u(5,i,j,1)-sum(u(2:4,i,j,1)**2)/u(1,i,j,1)/2-sum(b(:,i,j,1)**2)/2
+       !write(2,'(7(1x,e30.20))') u(5,i,j,1)-sum(u(2:4,i,j,1)**2)/u(1,i,j,1)/2-sum(b(:,i,j,1)**2)/2
+    end do
+    do i=1,nx
+       write(3,'(3(1x,e15.5))') b(1,i,j,1),b(2,i,j,1),b(3,i,j,1)
     end do
     end do
-    close(20)
-    close(10)
+    write(4,*) t
   end subroutine output
 
 
@@ -170,14 +187,14 @@ subroutine init(u,b,nx,ny,nz)
   b=0
   b(1,:,:,:)=1
   u(1,:,:,:)=1
-  u(5,:,:,:)=.001  ! to keep things stable
+  u(5,:,:,:)=.001  ! Adjust to determine effect on stability (originally: p=0.001)
   do i=1,nx
      u(3,i,:,:)=0.1*sin( 2*3.14159*i/nx )
   enddo
   b(2,:,:,:)=-u(3,:,:,:)
   b(2,:,:,:)=(b(2,:,:,:)+cshift(b(2,:,:,:),-1,1))/2
   u(5,:,:,:)=u(5,:,:,:)+sum(b**2,1)/2+u(3,:,:,:)**2/u(1,:,:,:)/2
- ! return
+  return
   ! magnetic
   u=0
   b=0
@@ -207,6 +224,18 @@ subroutine init(u,b,nx,ny,nz)
   u(5,:,:,:)=u(5,:,:,:)+sum(b**2,1)/2+sum(u(2:4,:,:,:)**2,1)/u(1,:,:,:)/2
   u(5,:,:,:)=u(5,:,:,:)+p0*u(2,:,:,:)*5./3./(2./3.)
   write(*,*) 'magnetosonic'
+  ! return
+
+  ! shock
+  u=0
+  b=0
+  u(1,:,:,:)=1
+  u(2,1:nx/2,:,:)=10
+  u(2,(nx/2+1):nx,:,:)=-10
+  u(5,1:nx/2,:,:)=20
+  u(5,(nx/2+1):nx,:,:)=1
+  b(1:2,:,:,:)=5./sqrt(4.*3.14159)
+  write(*,*) 'shock'
 end subroutine init
 
 subroutine fluidx(u,b,nx,ny,nz,dt)
